@@ -39,11 +39,21 @@ $ cd pulumi-shared-storage-tidb
 ```
 2. Install the dependencies.
 ```
-$ npm install
+$ make install
 ```
-3. Create a new Pulumi stack named dev-us-east-1-f01.
+3. Set environment variables for a new Pulumi stack.
 ```
-$ pulumi stack init dev-us-east-1-f01
+$ export ENV=dev
+$ export REGION=us-east-1
+$ export SUFFIX=f01
+```
+4. Create an empty Pulumi stack named `${ENV}-${REGION}-${SUFFIX}`.
+```
+$ make init
+```
+5. Switch the current workspace to the Pulumi stack `${ENV}-${REGION}-${SUFFIX}`.
+```
+$ pulumi stack select ${ENV}-${REGION}-${SUFFIX}
 ```
 
 ### Provisioning a New EKS Cluster
@@ -234,7 +244,7 @@ VolumeBindingMode:  WaitForFirstConsumer
 
 ### Deploying Shared Storage TiDB Cluster
 Set the Pulumi configuration variables for the shared storage TiDB cluster.
-* Set a password for each tenant.
+* Set passwords for tenants.
 * Enable the shared storage TiDB cluster.
 ```
 $ export PASSWORD_TENANT_1="admin-1"
@@ -322,7 +332,7 @@ serverless-cluster-tenant-2-tidb-peer   ClusterIP   None             <none>     
 $ kubectl port-forward -n tidb-serverless svc/serverless-cluster-tenant-1-tidb 14001:4000 > pf14001.out &
 $ kubectl port-forward -n tidb-serverless svc/serverless-cluster-tenant-2-tidb 14002:4000 > pf14002.out &
 ```
-* Export the variable of the tenant TiDB service.
+* Set environment variables for the tenant TiDB service.
 ```
 $ export HOST_TENANT_1=127.0.0.1
 $ export HOST_TENANT_2=127.0.0.1
@@ -368,7 +378,7 @@ NAME                                    TYPE           CLUSTER-IP       EXTERNAL
 serverless-cluster-tenant-1-tidb        LoadBalancer   172.20.223.105   a9d2df18da8764b349454447f1xxxxxx-1568000000.us-east-1.elb.amazonaws.com   4000:30556/TCP,10080:32276/TCP   11m
 serverless-cluster-tenant-2-tidb        LoadBalancer   172.20.196.108   a515a70030d5746d4808e6221fxxxxxx-1632000000.us-east-1.elb.amazonaws.com   4000:32728/TCP,10080:31723/TCP   11m
 ```
-* Export the variable of the tenant TiDB service.
+* Set environment variables for the tenant TiDB service.
 ```
 $ export HOST_TENANT_1=`kubectl -n tidb-serverless get svc -l app.kubernetes.io/component=tidb | grep -v "<none>" | grep tenant-1 |awk '{print $4}'`
 $ export HOST_TENANT_2=`kubectl -n tidb-serverless get svc -l app.kubernetes.io/component=tidb | grep -v "<none>" | grep tenant-2 |awk '{print $4}'`
@@ -519,9 +529,9 @@ Resources:
 Duration: 7m56s
 ```
 The resources in the stack have been deleted, but the history and configuration associated with the stack are still maintained.
-If you want to remove the stack completely, run `pulumi stack rm dev-us-east-1-f01`.
+If you want to remove the stack completely, run `make rm` or `pulumi stack rm ${ENV}-${REGION}-${SUFFIX}`.
 ```
-pulumi stack rm dev-us-east-1-f01
+make rm
 ```
 
 ---
@@ -531,6 +541,5 @@ This lab will incur charges under the aws account, described in detail at:
 
 - New EKS cluster control plane, **_1_** cluster x **_0.10_** USD per hour
 - 10 EKS worker EC2 `t2.medium` instances, **_10_** instances * **_0.0464_** USD per hour
-- 6 EBS of size 10 GiB, with negligible cost
 
 Total **_0.564_** USD per hour.
