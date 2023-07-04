@@ -254,7 +254,7 @@ VolumeBindingMode:  WaitForFirstConsumer
 
 ### Deploying Shared Storage TiDB Cluster
 Set the Pulumi configuration variables for the shared storage TiDB cluster.
-- If you want to set passwords for tenants, set the following variables.
+- (Optional) If you want to initialize the password when you start the tenant TiDB service for the first time, set the following variables. If you have already initialized the password, you do not need to repeat the initialization when you wake up the tenant TiDB service.
 ```
 $ export PASSWORD_TENANT_1="admin-1"
 $ export PASSWORD_TENANT_2="admin-2"
@@ -489,6 +489,8 @@ Connection to 50.16.xx.xx closed.
 ```
 Set the Pulumi configuration variables to suspend the shared storage TiDB cluster.
 ```
+$ pulumi config set --path 'serverless-keyspaces[0].rootPassword' ""
+$ pulumi config set --path 'serverless-keyspaces[1].rootPassword' ""
 $ pulumi config set --path 'serverless-keyspaces[0].tidbReplicas' 0
 $ pulumi config set --path 'serverless-keyspaces[1].tidbReplicas' 0
 $ pulumi config set --path 'serverless-suspend' true
@@ -631,6 +633,6 @@ make clean
 This lab will incur charges under the aws account, described in detail at: 
 
 - New EKS cluster control plane, **_1_** cluster x **_0.10_** USD per hour
-- 11 EKS worker EC2 `t2.medium` instances, **_11_** instances * **_0.0464_** USD per hour
+- 12 EKS worker EC2 `t2.medium` instances, **_12_** instances * **_0.0464_** USD per hour
 
-Total **_0.6104_** USD per hour.
+Total **_0.6568_** USD per hour.
