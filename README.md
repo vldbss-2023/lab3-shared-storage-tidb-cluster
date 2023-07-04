@@ -32,10 +32,10 @@ TiDB Cloud Serverless achieves fast, on-demand usage, and low prices, providing 
 * [Install AWS IAM Authenticator for Kubernetes](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html)
 
 ### Initializing the Pulumi Project
-1. Start by cloning the [pulumi-shared-storage-tidb](https://github.com/hslam/pulumi-shared-storage-tidb) to your local machine.
+1. Start by cloning the [pulumi-tidb-serverless](https://github.com/hslam/pulumi-tidb-serverless) to your local machine.
 ```
-$ git clone https://github.com/hslam/pulumi-shared-storage-tidb.git
-$ cd pulumi-shared-storage-tidb
+$ git clone https://github.com/hslam/pulumi-tidb-serverless.git
+$ cd pulumi-tidb-serverless
 ```
 2. Install the dependencies.
 ```
@@ -63,7 +63,7 @@ $ pulumi up
 Updating (dev-us-east-1-f01)
 
      Type                                          Name                                                         Status              
- +   pulumi:pulumi:Stack                           pulumi-shared-storage-tidb-dev-us-east-1-f01                 created (779s)      
+ +   pulumi:pulumi:Stack                           pulumi-tidb-serverless-dev-us-east-1-f01                 created (779s)      
  +   ├─ eks:index:Cluster                          dev-us-east-1-f01-cluster                                    created (745s)      
  +   ├─ aws:iam:Role                               dev-us-east-1-f01-managed-nodegroup-role                     created (3s)        
  +   ├─ awsx:ec2:Vpc                               dev-us-east-1-f01-vpc                                        created (5s)        
@@ -185,7 +185,7 @@ $ pulumi up
 Updating (dev-us-east-1-f01)
 
      Type                                                               Name                                          Status              
-     pulumi:pulumi:Stack                                                pulumi-shared-storage-tidb-dev-us-east-1-f01                      
+     pulumi:pulumi:Stack                                                pulumi-tidb-serverless-dev-us-east-1-f01                      
      ├─ eks:index:Cluster                                               dev-us-east-1-f01-cluster                                         
  +   ├─ kubernetes:yaml:ConfigFile                                      tidb-operator-crds                            created (2s)        
  +   ├─ kubernetes:helm.sh/v3:Chart                                     aws-cluster-auto-scaler                       created (2s)        
@@ -274,7 +274,7 @@ $ pulumi up
 Updating (dev-us-east-1-f01)
 
      Type                                                   Name                                               Status              
-     pulumi:pulumi:Stack                                    pulumi-shared-storage-tidb-dev-us-east-1-f01                           
+     pulumi:pulumi:Stack                                    pulumi-tidb-serverless-dev-us-east-1-f01                           
      ├─ eks:index:Cluster                                   dev-us-east-1-f01-cluster                                              
  +   ├─ kubernetes:core/v1:Namespace                        dev-us-east-1-f01-serverless-ns                    created (0.77s)     
  +   ├─ kubernetes:yaml:ConfigFile                          dev-us-east-1-f01-serverless-cluster-tenant-2      created (5s)        
@@ -339,7 +339,7 @@ serverless-cluster-tenant-2-tidb        LoadBalancer   172.20.213.180   k8s-tidb
 ```
 You can select either `kubectl port-forward` or a bastion host from the following options to access the database.
 
-### Using `kubectl port-forward` to access the database (Optional)
+### (Optional) Using `kubectl port-forward` to access the database
 If you do not create a bastion host, you can use `kubectl port-forward` to access tenant TiDB service.
 
 Forward tenant TiDB port from the local host to the k8s cluster.
@@ -357,7 +357,7 @@ $ export PORT_TENANT_2=14002
 ```
 Install the MySQL client on your local machine.
 
-### Preparing a bastion host to access the database (Optional)
+### (Optional) Preparing a bastion host to access the database
 If you do not use `kubectl port-forward`, you can create a bastion host to access tenant TiDB service.
 
 Allow the bastion host to access the Internet. Select the correct key pair so that you can log in to the host via SSH.
@@ -380,7 +380,7 @@ $ pulumi up
 Updating (dev-us-east-1-f01)
 
      Type                      Name                                          Status            
-     pulumi:pulumi:Stack       pulumi-shared-storage-tidb-dev-us-east-1-f01                    
+     pulumi:pulumi:Stack       pulumi-tidb-serverless-dev-us-east-1-f01                    
  +   ├─ aws:ec2:KeyPair        dev-us-east-1-f01-bastion-key-pair            created (2s)      
  +   ├─ aws:ec2:SecurityGroup  dev-us-east-1-f01-bastion-security-group      created (6s)      
      ├─ eks:index:Cluster      dev-us-east-1-f01-cluster                                       
@@ -406,11 +406,7 @@ Install the MySQL client on the bastion host.
 ```
 $ sudo yum install mysql -y
 ```
-- Connect the client to the tenant TiDB cluster without password.
-```
-$ mysql --comments -h ${tidb-nlb-dnsname} -P 4000 -u root
-```
-- Connect the client to the tenant TiDB cluster with password.
+Connect the client to the tenant TiDB cluster. If there is the tenant password, enter the password. Otherwise, press `Enter` directly.
 ```
 $ mysql --comments -h ${tidb-nlb-dnsname} -P 4000 -u root -p
 Enter password:
@@ -430,73 +426,6 @@ $ export PORT_TENANT_2=4000
 Make sure you have operated one of the two access options above.
 
 Access the tenant TiDB service and create a table in the test database.
-- Access the database without password.
-```
-$ mysql --comments -h ${HOST_TENANT_1} -P ${PORT_TENANT_1} -u root
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 417
-Server version: 5.7.25-TiDB-v7.1.0 TiDB Server (Apache License 2.0) Community Edition, MySQL 5.7 compatible
-
-Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql> use test;
-Database changed
-mysql> show tables;
-Empty set (0.38 sec)
-
-mysql> create table if not exists `tenant_1_tbl` (`id` int unsigned auto_increment primary key, `column_name` varchar(100));
-Query OK, 0 rows affected (0.58 sec)
-
-mysql> show tables;
-+----------------+
-| Tables_in_test |
-+----------------+
-| tenant_1_tbl   |
-+----------------+
-1 row in set (0.27 sec)
-
-mysql> exit
-Bye
-
-$ mysql --comments -h ${HOST_TENANT_2} -P ${PORT_TENANT_2} -u root
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 433
-Server version: 5.7.25-TiDB-v7.1.0 TiDB Server (Apache License 2.0) Community Edition, MySQL 5.7 compatible
-
-Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql> use test;
-Database changed
-mysql> show tables;
-Empty set (0.29 sec)
-
-mysql> create table if not exists `tenant_2_tbl` (`id` int unsigned auto_increment primary key, `column_name` varchar(100));
-Query OK, 0 rows affected (0.50 sec)
-
-mysql> show tables;
-+----------------+
-| Tables_in_test |
-+----------------+
-| tenant_2_tbl   |
-+----------------+
-1 row in set (0.42 sec)
-
-mysql> exit
-Bye
-```
-- Access the database with password.
 ```
 $ mysql --comments -h ${HOST_TENANT_1} -P ${PORT_TENANT_1} -u root -p
 Enter password: 
@@ -552,7 +481,7 @@ Bye
 ```
 
 ### Suspending Shared Storage TiDB Cluster
-If you are connecting to the bastion host, exit it and return to the previous local directory `pulumi-shared-storage-tidb` .
+If you are connecting to the bastion host, exit it and return to the previous local directory `pulumi-tidb-serverless` .
 ```
 [ec2-user@ip-10-0-171-43 ~]$ exit
 logout
@@ -570,7 +499,7 @@ $ pulumi up
 Updating (dev-us-east-1-f01)
 
      Type                                                   Name                                               Status              Info
-     pulumi:pulumi:Stack                                    pulumi-shared-storage-tidb-dev-us-east-1-f01                           
+     pulumi:pulumi:Stack                                    pulumi-tidb-serverless-dev-us-east-1-f01                           
      ├─ eks:index:Cluster                                   dev-us-east-1-f01-cluster                                              
      ├─ kubernetes:yaml:ConfigFile                          dev-us-east-1-f01-serverless-cluster                                   
  ~   │  └─ kubernetes:pingcap.com/v1alpha1:TidbCluster      tidb-serverless/serverless-cluster                 updated (0.82s)     [diff: ~spec]
@@ -612,7 +541,7 @@ $ pulumi up
 Updating (dev-us-east-1-f01)
 
      Type                                               Name                                          Status            
-     pulumi:pulumi:Stack                                pulumi-shared-storage-tidb-dev-us-east-1-f01                    
+     pulumi:pulumi:Stack                                pulumi-tidb-serverless-dev-us-east-1-f01                    
      ├─ eks:index:Cluster                               dev-us-east-1-f01-cluster                                       
  -   ├─ kubernetes:yaml:ConfigFile                      dev-us-east-1-f01-serverless-cluster          deleted           
  -   └─ kubernetes:core/v1:Namespace                    dev-us-east-1-f01-serverless-ns               deleted (14s)     
@@ -639,7 +568,7 @@ $ pulumi up
 Updating (dev-us-east-1-f01)
 
      Type                                                               Name                                          Status              
-     pulumi:pulumi:Stack                                                pulumi-shared-storage-tidb-dev-us-east-1-f01                      
+     pulumi:pulumi:Stack                                                pulumi-tidb-serverless-dev-us-east-1-f01                      
      ├─ eks:index:Cluster                                               dev-us-east-1-f01-cluster                                         
  -   ├─ kubernetes:storage.k8s.io/v1:StorageClass                       ebs-sc                                        deleted (2s)        
  -   ├─ kubernetes:helm.sh/v3:Chart                                     aws-cluster-auto-scaler                       deleted             
@@ -669,7 +598,7 @@ $ pulumi destroy
 Destroying (dev-us-east-1-f01)
 
      Type                                    Name                                                         Status             
- -   pulumi:pulumi:Stack                     pulumi-shared-storage-tidb-dev-us-east-1-f01                 deleted            
+ -   pulumi:pulumi:Stack                     pulumi-tidb-serverless-dev-us-east-1-f01                 deleted            
  -   ├─ eks:index:ManagedNodeGroup           dev-us-east-1-f01-us-east-1c-tikv-standard-0                 deleted            
  -   ├─ eks:index:ManagedNodeGroup           dev-us-east-1-f01-default-standard-0                         deleted            
  -   ├─ aws:iam:Role                         dev-us-east-1-f01-managed-nodegroup-role                     deleted (1s)       
