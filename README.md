@@ -1,4 +1,4 @@
-# lab4-shared-storage-tidb-cluster
+# lab3-shared-storage-tidb-cluster
 
 This lab deploys a shared storage TiDB cluster on an AWS EKS.
 
