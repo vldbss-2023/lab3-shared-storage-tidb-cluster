@@ -32,9 +32,9 @@ TiDB Cloud Serverless achieves fast, on-demand usage, and low prices, providing 
 * [Install AWS IAM Authenticator for Kubernetes](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html)
 
 ### 1. Initializing the Pulumi Project
-1.1 Start by cloning the [pulumi-tidb-serverless](https://github.com/hslam/pulumi-tidb-serverless) to your local machine.
+1.1 Start by cloning the [pulumi-tidb-serverless](https://github.com/hslam/pulumi-tidb-serverless/tree/vldbss-2023) to your local machine.
 ```
-$ git clone https://github.com/hslam/pulumi-tidb-serverless.git
+$ git clone -b vldbss-2023 https://github.com/hslam/pulumi-tidb-serverless.git
 $ cd pulumi-tidb-serverless
 ```
 1.2 Install the dependencies.
